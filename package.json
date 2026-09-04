@@ -1,0 +1,119 @@
+{
+  "name": "ols-hover",
+  "displayName": "OLS Term Hover",
+  "description": "Hover over ontology term IRIs, CURIEs (GO:0008150) and OBO short forms (GO_0008150) in any file to see their label and definition from the EMBL-EBI Ontology Lookup Service (OLS).",
+  "version": "0.1.0",
+  "publisher": "ebispot",
+  "license": "Apache-2.0",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "ontology",
+    "OLS",
+    "OBO",
+    "CURIE",
+    "bioinformatics",
+    "semantic web"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "ols.openTermAtCursor",
+        "title": "OLS: Open term at cursor in browser"
+      },
+      {
+        "command": "ols.clearCache",
+        "title": "OLS: Clear term cache"
+      },
+      {
+        "command": "ols.refreshPrefixes",
+        "title": "OLS: Refresh known ontology prefixes"
+      }
+    ],
+    "configuration": {
+      "title": "OLS Term Hover",
+      "properties": {
+        "ols.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show OLS hovers for ontology term identifiers."
+        },
+        "ols.apiBaseUrl": {
+          "type": "string",
+          "default": "https://www.ebi.ac.uk/ols4/api",
+          "description": "Base URL of the OLS REST API (no trailing slash). Point this at a local OLS4 instance if you run one."
+        },
+        "ols.webBaseUrl": {
+          "type": "string",
+          "default": "https://www.ebi.ac.uk/ols4",
+          "description": "Base URL of the OLS web UI, used for the 'Open in OLS' links."
+        },
+        "ols.restrictToKnownPrefixes": {
+          "type": "boolean",
+          "default": true,
+          "description": "Only recognise CURIEs and OBO short forms whose prefix belongs to an ontology loaded in OLS (the list is fetched from OLS and cached for a day). Turn off to attempt a lookup for any PREFIX:0000000 or PREFIX_0000000 pattern. IRIs are always looked up."
+        },
+        "ols.extraPrefixes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Additional CURIE prefixes to recognise, in addition to those fetched from OLS."
+        },
+        "ols.language": {
+          "type": "string",
+          "default": "en",
+          "description": "Preferred language for labels and definitions (passed to OLS as 'lang')."
+        },
+        "ols.showDefinition": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include the term definition in the hover."
+        },
+        "ols.showSynonyms": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include synonyms in the hover."
+        },
+        "ols.cacheTtlMinutes": {
+          "type": "number",
+          "default": 60,
+          "minimum": 0,
+          "description": "How long successful lookups are cached in memory, in minutes."
+        },
+        "ols.requestTimeoutMs": {
+          "type": "number",
+          "default": 8000,
+          "minimum": 500,
+          "description": "Timeout for requests to OLS, in milliseconds."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "test": "npm run compile && node --test \"test/**/*.test.js\"",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.2.0",
+    "typescript": "^5.5.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jamesamcl/vscode-ols.git"
+  }
+}
