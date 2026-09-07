@@ -35,14 +35,22 @@ Classes, properties (e.g. `RO:0002202`) and individuals are all supported. Obsol
 
 Diagnostics are written to the **OLS** output channel.
 
+## Privacy
+
+Every identifier you hover is sent to the OLS API configured in `ols.apiBaseUrl` (by default the public EMBL-EBI service, under the [EMBL-EBI terms of use](https://www.ebi.ac.uk/about/terms-of-use)). Nothing else is sent, and the extension collects no telemetry. If you work with identifiers from unpublished ontologies, point `ols.apiBaseUrl` at your own OLS instance.
+
+## Publishing
+
+Build the VSIX with `npm run package` and upload it at https://marketplace.visualstudio.com/manage under the **EMBL-EBI** publisher, or run `npx vsce publish` with a Marketplace personal access token.
+
 ## Development
 
 ```sh
 npm install
 npm test            # compiles, then runs unit tests + a live smoke test against OLS (OLS_LIVE=0 to skip)
-npm run package     # builds ols-hover-<version>.vsix
+npm run package     # builds ols-<version>.vsix
 ```
 
 Press **F5** in VS Code to launch an Extension Development Host with the extension loaded.
 
-Install a built VSIX with `code --install-extension ols-hover-0.1.0.vsix`, or via **Extensions: Install from VSIX...** in the command palette.
+Install a built VSIX with `code --install-extension ols-0.1.0.vsix`, or via **Extensions: Install from VSIX...** in the command palette.
