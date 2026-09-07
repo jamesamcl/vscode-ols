@@ -48,9 +48,9 @@ Build the VSIX with `npm run package` and upload it at https://marketplace.visua
 ```sh
 npm install
 npm test            # compiles, then runs unit tests + a live smoke test against OLS (OLS_LIVE=0 to skip)
-npm run package     # builds ols-hover-<version>.vsix
+npm run package     # builds vscode-ols-<version>.vsix
 ```
 
 Press **F5** in VS Code to launch an Extension Development Host with the extension loaded.
 
-Install a built VSIX with `code --install-extension ols-hover-0.1.0.vsix`, or via **Extensions: Install from VSIX...** in the command palette.
+Install a built VSIX with `code --install-extension vscode-ols-0.1.0.vsix`, or via **Extensions: Install from VSIX...** in the command palette.
