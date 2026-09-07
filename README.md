@@ -41,7 +41,7 @@ Every identifier you hover is sent to the OLS API configured in `ols.apiBaseUrl`
 
 ## Publishing
 
-Build the VSIX with `npm run package` and upload it at https://marketplace.visualstudio.com/manage under the **EMBL-EBI** publisher, or run `npx vsce publish` with a Marketplace personal access token.
+Build the VSIX with `npm run package` and upload it at https://marketplace.visualstudio.com/manage under the **ols** publisher, or run `npx vsce publish` with a Marketplace personal access token.
 
 ## Development
 

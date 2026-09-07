@@ -3,7 +3,7 @@
   "displayName": "OLS",
   "description": "Hover over ontology term IRIs, CURIEs (GO:0008150) and OBO short forms (GO_0008150) in any file to see their label and definition from the EMBL-EBI Ontology Lookup Service (OLS).",
   "version": "0.1.0",
-  "publisher": "EMBL-EBI",
+  "publisher": "ols",
   "license": "Apache-2.0",
   "engines": {
     "vscode": "^1.85.0"
