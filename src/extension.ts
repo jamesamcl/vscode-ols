@@ -124,7 +124,7 @@ function buildHover(ref: TermRef, info: TermInfo): vscode.MarkdownString {
     md.appendMarkdown(`_Synonyms:_ ${shown.join(', ')}${more}\n\n`);
   }
 
-  md.appendMarkdown(`[Open in OLS](${info.webUrl}) · [IRI](${info.iri})`);
+  md.appendMarkdown(`[Open in OLS](${info.webUrl})`);
   return md;
 }
 
