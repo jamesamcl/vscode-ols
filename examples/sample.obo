@@ -1,0 +1,19 @@
+format-version: 1.2
+ontology: ex
+
+[Term]
+id: EX:0000001
+name: device
+
+[Term]
+id: EX:0000002
+name: widget
+def: "A small part that is assembled into devices." []
+is_a: EX:0000001 ! device
+
+[Term]
+id: EX:0000003
+name: widget assembly
+def: "A device made of widgets." []
+is_a: EX:0000001
+relationship: BFO:0000051 EX:0000002

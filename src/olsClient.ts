@@ -55,9 +55,20 @@ function firstString(v: OlsValue): string | undefined {
 interface CacheEntry {
   expires: number;
   value: Promise<TermInfo | null>;
+  /** The result once the lookup has finished; undefined while it's in flight. */
+  settled?: TermInfo | null;
 }
 
 const NEGATIVE_TTL_MS = 5 * 60 * 1000;
+
+/** The OLS query parameter for a reference. Prefixed names are expanded to IRIs during detection. */
+function queryParam(ref: TermRef): 'iri' | 'curie' | 'shortForm' {
+  return ref.kind === 'curie' || ref.kind === 'shortForm' ? ref.kind : 'iri';
+}
+
+function cacheKey(ref: TermRef, opts: OlsClientOptions): string {
+  return `${opts.apiBaseUrl}|${opts.language}|${queryParam(ref)}|${ref.id}`;
+}
 
 export class OlsClient {
   private cache = new Map<string, CacheEntry>();
@@ -71,7 +82,7 @@ export class OlsClient {
   /** Look up a term reference, returning null when OLS knows nothing about it. */
   lookup(ref: TermRef): Promise<TermInfo | null> {
     const opts = this.getOptions();
-    const key = `${opts.apiBaseUrl}|${opts.language}|${ref.kind}|${ref.id}`;
+    const key = cacheKey(ref, opts);
     const now = Date.now();
     const cached = this.cache.get(key);
     if (cached && cached.expires > now) {
@@ -84,6 +95,7 @@ export class OlsClient {
         this.cache.set(key, {
           expires: Date.now() + (info ? opts.cacheTtlMs : NEGATIVE_TTL_MS),
           value: Promise.resolve(info),
+          settled: info,
         });
         return info;
       },
@@ -96,10 +108,15 @@ export class OlsClient {
     return value;
   }
 
+  /** The result of an earlier lookup if it has finished and is still cached, otherwise undefined. */
+  peek(ref: TermRef): TermInfo | null | undefined {
+    const cached = this.cache.get(cacheKey(ref, this.getOptions()));
+    return cached && cached.expires > Date.now() ? cached.settled : undefined;
+  }
+
   private async doLookup(ref: TermRef, opts: OlsClientOptions): Promise<TermInfo | null> {
-    const param = ref.kind === 'iri' ? 'iri' : ref.kind === 'curie' ? 'curie' : 'shortForm';
     const base = `${opts.apiBaseUrl.replace(/\/+$/, '')}/v2/entities`;
-    const params = new URLSearchParams({ [param]: ref.id, size: '1', lang: opts.language, includeObsoleteEntities: 'true' });
+    const params = new URLSearchParams({ [queryParam(ref)]: ref.id, size: '1', lang: opts.language, includeObsoleteEntities: 'true' });
 
     // Prefer the ontology that defines the term; fall back to any ontology that imports it.
     const defining = await this.fetchEntities(`${base}?${params}&isDefiningOntology=true`, opts);
