@@ -1,0 +1,22 @@
+@prefix obo: <http://purl.obolibrary.org/obo/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+# EX terms are labelled below, so their labels show inline without OLS.
+# obo:BFO_0000051 (has part) is only labelled inline with ols.inlayHints.lookUpInOls on.
+
+obo:EX_0000001 a owl:Class ;
+    rdfs:label "device"@en .
+
+obo:EX_0000002 a owl:Class ;
+    rdfs:subClassOf obo:EX_0000001 ;
+    obo:IAO_0000115 "A small part that is assembled into devices."@en ;
+    rdfs:label "widget"@en .
+
+obo:EX_0000003 a owl:Class ;
+    rdfs:subClassOf obo:EX_0000001 ,
+        [ a owl:Restriction ;
+          owl:onProperty obo:BFO_0000051 ;
+          owl:someValuesFrom obo:EX_0000002 ] ;
+    obo:IAO_0000115 "A device made of widgets."@en ;
+    rdfs:label "widget assembly"@en .

@@ -44,6 +44,17 @@ test('returns null for unknown identifiers and caches results', { skip }, async 
   assert.equal(client.lookup(ref), client.lookup(ref)); // same cached promise
 });
 
+test('looks up prefixed names by IRI and peeks at finished lookups', { skip }, async () => {
+  const ref = {
+    kind: 'prefixedName', id: 'http://purl.obolibrary.org/obo/BFO_0000051', text: 'obo:BFO_0000051', start: 0, end: 15,
+  };
+  assert.equal(client.peek(ref), undefined);
+  const pending = client.lookup(ref);
+  assert.equal(client.peek(ref), undefined);
+  assert.equal((await pending).label, 'has part');
+  assert.equal(client.peek(ref).label, 'has part');
+});
+
 test('fetches ontology prefixes', { skip }, async () => {
   const prefixes = await client.fetchPrefixes();
   assert.ok(prefixes.size > 100);

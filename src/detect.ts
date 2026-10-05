@@ -5,13 +5,17 @@
  *   - IRIs:            http://purl.obolibrary.org/obo/GO_0008150, http://www.ebi.ac.uk/efo/EFO_0000400
  *   - CURIEs:          GO:0008150, NCBITaxon:9606, EDAM:data_0006, APOLLO_SV:00000001
  *   - OBO short forms: GO_0008150, NCBITaxon_9606, EDAM_data_0006, APOLLO_SV_00000001
+ *   - Prefixed names:  obo:GO_0008150, ex:widget, using prefixes the document declares
  */
 
-export type TermKind = 'iri' | 'curie' | 'shortForm';
+export type TermKind = 'iri' | 'curie' | 'shortForm' | 'prefixedName';
 
 export interface TermRef {
   kind: TermKind;
-  /** The identifier as it should be sent to OLS (prefix casing normalised where known). */
+  /**
+   * The identifier as it should be sent to OLS (prefix casing normalised where known).
+   * For a prefixed name this is the expanded IRI.
+   */
   id: string;
   /** The text exactly as it appears in the document. */
   text: string;
@@ -30,6 +34,12 @@ export interface DetectOptions {
    * prefix is accepted.
    */
   knownPrefixes?: Map<string, string>;
+  /**
+   * Prefixes declared by the document (Prefix(obo:=<...>) in OFN, @prefix in Turtle), as
+   * prefix name -> namespace IRI. Names using them are expanded to IRIs, whether or not the
+   * prefix is in knownPrefixes.
+   */
+  documentPrefixes?: ReadonlyMap<string, string>;
 }
 
 const IRI_RE = /https?:\/\/[^\s<>"'`\\\[\]{}|]+/g;
@@ -42,6 +52,18 @@ const CURIE_RE = /(?<![\w:/])([A-Za-z][A-Za-z0-9_]*):([A-Za-z0-9_]*\d)(?![\w:]|\
 // Underscore-separated token starting with a letter, containing at least one '_'
 // and ending with a digit (GO_0008150, EDAM_data_0006).
 const SHORT_FORM_RE = /(?<![\w:/])([A-Za-z][A-Za-z0-9]*(?:_[A-Za-z0-9]+)+)(?![\w:]|\.\w)/g;
+
+// Turtle/OFN prefixed name (obo:GO_0008150, :widget). The local part may contain dots but not end with one.
+const PREFIXED_NAME_RE = /(?<![\w:/.-])([A-Za-z][\w.-]*)?:(\w(?:[\w.-]*[\w-])?)(?![\w:])/g;
+
+// RDF, RDFS, OWL and XSD vocabulary (rdfs:label, owl:Thing) isn't worth looking up.
+const BUILTIN_NAMESPACES = [
+  'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+  'http://www.w3.org/2000/01/rdf-schema#',
+  'http://www.w3.org/2002/07/owl#',
+  'http://www.w3.org/2001/XMLSchema#',
+  'http://www.w3.org/XML/1998/namespace',
+];
 
 function trimIri(text: string): string {
   let t = text.replace(IRI_TRAILING_PUNCT, '');
@@ -73,6 +95,22 @@ export function findAllTerms(line: string, opts: DetectOptions = {}): TermRef[] 
       continue;
     }
     refs.push({ kind: 'iri', id: text, text, start: m.index!, end: m.index! + text.length });
+  }
+
+  if (opts.documentPrefixes) {
+    for (const m of line.matchAll(PREFIXED_NAME_RE)) {
+      const start = m.index!;
+      const end = start + m[0].length;
+      const namespace = opts.documentPrefixes.get(m[1] ?? '');
+      if (namespace === undefined || overlaps(refs, start, end)) {
+        continue;
+      }
+      const iri = namespace + m[2];
+      if (BUILTIN_NAMESPACES.some((ns) => iri.startsWith(ns))) {
+        continue;
+      }
+      refs.push({ kind: 'prefixedName', id: iri, text: m[0], start, end });
+    }
   }
 
   for (const m of line.matchAll(CURIE_RE)) {

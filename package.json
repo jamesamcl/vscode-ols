@@ -1,7 +1,7 @@
 {
   "name": "vscode-ols",
   "displayName": "OLS",
-  "description": "Hover over ontology term IRIs, CURIEs (GO:0008150) and OBO short forms (GO_0008150) in any file to see their label and definition from the EMBL-EBI Ontology Lookup Service (OLS).",
+  "description": "Hover over ontology term IRIs, CURIEs (GO:0008150) and OBO short forms (GO_0008150) in any file to see their label and definition from the EMBL-EBI Ontology Lookup Service (OLS), and read OWL, Turtle and OBO files with term labels shown inline.",
   "version": "0.1.0",
   "publisher": "ols",
   "license": "Apache-2.0",
@@ -69,6 +69,21 @@
           "default": [],
           "description": "Additional CURIE prefixes to recognise, in addition to those fetched from OLS."
         },
+        "ols.ontologyFiles": {
+          "type": "string",
+          "default": "**/*.{obo,ofn,omn,owl,owx,ttl,rq,sparql}",
+          "description": "Glob for ontology source files. In these files, prefix declarations and the labels and definitions the file gives are read, and labels are shown inline."
+        },
+        "ols.inlayHints.enabled": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Show each term's label after its identifier in ontology files (`#ols.ontologyFiles#`). Only labels given in the file itself are shown unless `#ols.inlayHints.lookUpInOls#` is on."
+        },
+        "ols.inlayHints.lookUpInOls": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Look up the labels of terms the file doesn't label in OLS, so they're shown inline too. This sends every identifier in the visible part of an ontology file to the OLS API, not only the ones you hover."
+        },
         "ols.language": {
           "type": "string",
           "default": "en",
@@ -87,7 +102,7 @@
         "ols.cacheTtlMinutes": {
           "type": "number",
           "default": 60,
-          "minimum": 0,
+          "minimum": 1,
           "description": "How long successful lookups are cached in memory, in minutes."
         },
         "ols.requestTimeoutMs": {

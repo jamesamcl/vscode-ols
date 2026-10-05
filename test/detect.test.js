@@ -93,3 +93,50 @@ test('reports correct ranges', () => {
   assert.equal(line.slice(a.start, a.end), 'GO:0008150');
   assert.equal(line.slice(b.start, b.end), 'GO_0016020');
 });
+
+const obo = new Map([['obo', 'http://purl.obolibrary.org/obo/']]);
+
+test('expands prefixed names using the document prefixes', () => {
+  // From issue #1: OFN written with an obo: prefix.
+  const line = 'SubClassOf(obo:EX_0000003 ObjectSomeValuesFrom(obo:BFO_0000051 obo:EX_0000002))';
+  assert.deepEqual(ids(line, { knownPrefixes: known, documentPrefixes: obo }), [
+    'prefixedName:http://purl.obolibrary.org/obo/EX_0000003',
+    'prefixedName:http://purl.obolibrary.org/obo/BFO_0000051',
+    'prefixedName:http://purl.obolibrary.org/obo/EX_0000002',
+  ]);
+  const [ref] = findAllTerms(line, { knownPrefixes: known, documentPrefixes: obo });
+  assert.equal(line.slice(ref.start, ref.end), 'obo:EX_0000003');
+  assert.equal(ref.text, 'obo:EX_0000003');
+});
+
+test('document prefixes take precedence over CURIEs and allow any local name', () => {
+  const documentPrefixes = new Map([
+    ['GO', 'http://purl.obolibrary.org/obo/GO_'],
+    ['', 'http://example.org/ex#'],
+    ['ex', 'http://example.org/ex#'],
+  ]);
+  assert.deepEqual(ids('GO:0008150 :widget ex:part.of. MONDO:0005015', { knownPrefixes: known, documentPrefixes }), [
+    'prefixedName:http://purl.obolibrary.org/obo/GO_0008150',
+    'prefixedName:http://example.org/ex#widget',
+    'prefixedName:http://example.org/ex#part.of',
+    'curie:MONDO:0005015',
+  ]);
+});
+
+test('ignores undeclared prefixes, declarations and RDF/OWL vocabulary', () => {
+  const documentPrefixes = new Map([...obo, ['rdfs', 'http://www.w3.org/2000/01/rdf-schema#'], ['owl', 'http://www.w3.org/2002/07/owl#']]);
+  const lines = [
+    'Prefix(obo:=<http://purl.obolibrary.org/obo/>)',
+    '@prefix obo: <http://purl.obolibrary.org/obo/> .',
+    'AnnotationAssertion(rdfs:label owl:Thing "thing")',
+    'foo:bar ex:baz',
+    'std::vector 12:30',
+  ];
+  for (const line of lines) {
+    assert.deepEqual(
+      ids(line, { knownPrefixes: known, documentPrefixes }).filter((id) => !id.startsWith('iri:')),
+      [],
+      line,
+    );
+  }
+});
